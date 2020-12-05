@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Git branch or tag to build
+        required: true
+
+jobs:
+  docker:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        include:
+          - openldap: 2.4.50-r0
+            alpine: 3.12.1
+            tags: 2.4.50-r0-alpine3.12.1,2.4-alpine3.12,2-alpine3,2.4.50-r0,2.4,2
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ilteoood/docker_buildx@1.0.5
+        with:
+          tag: ${{ matrix.tags }}
+          imageName: cjyar/openldap
+          buildArg: ALPINE_VERSION=${{ matrix.alpine }},OPENLDAP_VERSION=${{ matrix.openldap }}
+          publish: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'workflow_dispatch' }}
+          dockerHubUser: cjyar
+          dockerHubPassword: ${{ secrets.DOCKER_PASSWORD }}
