@@ -1,0 +1,30 @@
+# Override security settings.
+dn: cn=config
+changetype: modify
+# Require authentication for all connections.
+add: olcRequires
+olcRequires: authc
+-
+# Require relatively strong crypto for all connections.
+add: olcSecurity
+olcSecurity: ssf=128
+-
+# Allow local connections from within the container to pass the ssf constraint above.
+add: olcLocalSSF
+olcLocalSSF: 128
+-
+# Require modern, stronger versions of the TLS protocol.
+add: olcTLSProtocolMin
+olcTLSProtocolMin: 3.1
+-
+# Path to the TLS CA certificates.
+add: olcTLSCACertificatePath
+olcTLSCACertificatePath: /etc/ssl/certs
+-
+# Path to this server's certificate.
+add: olcTLSCertificateFile
+olcTLSCertificateFile: /secrets/tls/tls.crt
+-
+# Path to this server's private key file.
+add: olcTLSCertificateKeyFile
+olcTLSCertificateKeyFile: /secrets/tls/tls.key

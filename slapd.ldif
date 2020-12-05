@@ -1,0 +1,36 @@
+# Root LDAP configuration file. For a thorough explanation, check https://www.openldap.org/doc/.
+
+# If you don't like something in this file, you can change most settings by adding a file with LDIF change records in
+# the /config directory. See https://linux.die.net/man/5/ldif and examples/security.ldif.
+
+# The global config object. See https://www.openldap.org/doc/admin24/slapdconf2.html#cn=config.
+dn: cn=config
+objectClass: olcGlobal
+cn: config
+olcPidFile: /run/openldap/slapd.pid
+olcArgsFile: /run/openldap/slapd.args
+
+# https://www.openldap.org/doc/admin24/slapdconf2.html#cn=module
+dn: cn=module,cn=config
+objectClass: olcModuleList
+cn: module
+olcModulepath:  /usr/lib/openldap
+olcModuleload:  back_mdb.so
+
+# https://www.openldap.org/doc/admin24/slapdconf2.html#cn=schema
+dn: cn=schema,cn=config
+objectClass: olcSchemaConfig
+cn: schema
+
+# Schemas that you definitely or probably need.
+include: file:///etc/openldap/schema/core.ldif
+include: file:///etc/openldap/schema/cosine.ldif
+include: file:///etc/openldap/schema/inetorgperson.ldif
+include: file:///etc/openldap/schema/nis.ldif
+
+# The main config database, configured to allow access from ldap tools inside the running container. Example:
+# ldapsearch -H ldapi:/// -Y EXTERNAL
+dn: olcDatabase=config,cn=config
+objectClass: olcDatabaseConfig
+olcDatabase: config
+olcRootDN: gidNumber=1000+uidNumber=1000,cn=peercred,cn=external,cn=auth

@@ -1,0 +1,38 @@
+# Define a database for domain example.com.
+
+dn: olcDatabase=mdb,cn=config
+objectClass: olcDatabaseConfig
+objectClass: olcMdbConfig
+olcDatabase: mdb
+# Allow unrestricted access from inside the container using the LDAP command line tools like ldapsearch and ldapadd.
+# Hint: Use flags "-H ldapi:/// -Y EXTERNAL" with any of these tools once you get a shell inside the container.
+olcRootDN: gidNumber=1000+uidNumber=1000,cn=peercred,cn=external,cn=auth
+# The domain name in X.500 syntax.
+olcSuffix: dc=example,dc=com
+# Directory on a persistent volume. You must create this directory.
+olcDbDirectory: /data/example.com
+# Restrict access to passwords.
+olcAccess: to attrs=userPassword
+  by self write
+  by anonymous auth
+  by dn.base="cn=Admin,dc=example,dc=com" write
+  by * none
+# Set access to all other objects in this domain.
+olcAccess: to *
+  by self write
+  by anonymous none
+  by dn.base="cn=Admin,dc=example,dc=com" write
+  by * read
+
+# The following two entries are necessary, but you can't include them in this file. They need to be manually loaded
+# so they go into persistent storage. Use ldapadd as described above.
+#dn: dc=example,dc=com
+#objectClass: dcObject
+#objectClass: organization
+#o: Example Organization Name
+#dc: example
+#
+#dn: cn=Admin,dc=example,dc=com
+#objectClass: person
+#sn: Administrator
+#userPassword: {SSHA}K/0m9zQJZKUNNwTd06REeDJMclD/ecEu
