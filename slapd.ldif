@@ -22,11 +22,8 @@ dn: cn=schema,cn=config
 objectClass: olcSchemaConfig
 cn: schema
 
-# Schemas that you definitely or probably need.
+# Required schema.
 include: file:///etc/openldap/schema/core.ldif
-include: file:///etc/openldap/schema/cosine.ldif
-include: file:///etc/openldap/schema/inetorgperson.ldif
-include: file:///etc/openldap/schema/nis.ldif
 
 # The main config database, configured to allow access from ldap tools inside the running container. Example:
 # ldapsearch -H ldapi:/// -Y EXTERNAL

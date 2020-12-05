@@ -14,6 +14,12 @@ You'll need to configure what domains it serves. For each domain, create an LDIF
 directory. Use [this example](examples/example.com.ldif) as a starter, and remember to create the database directory
 in the persistent volume.
 
+## Schemas
+
+You almost certainly want the schemas included in [schemas.ldif](examples/schemas.ldif). See the
+[OpenLDAP docs](https://www.openldap.org/doc/admin24/schema.html#Distributed%20Schema%20Files) for other available
+schemas.
+
 ## Security
 
 If you want more security than the default, modify [security.ldif](examples/security.ldif) to suit your tastes, and

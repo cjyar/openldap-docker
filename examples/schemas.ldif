@@ -1,0 +1,5 @@
+# Include more schemas that you probably want.
+
+include: file:///etc/openldap/schema/cosine.ldif
+include: file:///etc/openldap/schema/inetorgperson.ldif
+include: file:///etc/openldap/schema/nis.ldif
