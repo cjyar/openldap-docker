@@ -28,5 +28,5 @@ jobs:
           imageName: cjyar/openldap
           buildArg: ALPINE_VERSION=${{ matrix.alpine }},OPENLDAP_VERSION=${{ matrix.openldap }}
           publish: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'workflow_dispatch' }}
-          dockerHubUser: cjyar
-          dockerHubPassword: ${{ secrets.DOCKER_PASSWORD }}
+          dockerUser: cjyar
+          dockerPassword: ${{ secrets.DOCKER_PASSWORD }}
