@@ -5,47 +5,83 @@ metadata:
 
 ---
 
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config
+  namespace: ldap
+data:
+  # Include security.ldif here if you want TLS.
+  schemas.ldif: |
+    include: file:///etc/openldap/schema/cosine.ldif
+    include: file:///etc/openldap/schema/inetorgperson.ldif
+    include: file:///etc/openldap/schema/nis.ldif
+  example.com.ldif: |
+    dn: olcDatabase=mdb,cn=config
+    objectClass: olcDatabaseConfig
+    objectClass: olcMdbConfig
+    olcDatabase: mdb
+    olcRootDN: gidNumber=1000+uidNumber=1000,cn=peercred,cn=external,cn=auth
+    olcSuffix: dc=example,dc=com
+    olcDbDirectory: /data/example.com
+    olcAccess: to attrs=userPassword
+      by self write
+      by anonymous auth
+      by dn.base="cn=Admin,dc=example,dc=com" write
+      by * none
+    olcAccess: to *
+      by self write
+      by anonymous none
+      by dn.base="cn=Admin,dc=example,dc=com" write
+      by * read
+
+---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: ldap
-  name: ldap
+  name: openldap
 spec:
+  strategy:
+    rollingUpdate:
+      maxSurge: 0
   selector:
     matchLabels:
-      app: ldap
+      app: openldap
   template:
     metadata:
       labels:
-        app: ldap
+        app: openldap
     spec:
       containers:
-        - name: ldap
+        - name: openldap
           image: cjyar/openldap:2.4.50
-          args:
-            - -F
-            - /config
-            - -h
-            - ldapi:/// ldap:/// ldaps:///
           livenessProbe:
             exec:
               command: [ "ldapsearch", "-H", "ldapi:///", "-Y", "EXTERNAL", "-b", "", "-s", "base", "(objectclass=*)", "namingContexts" ]
           ports:
-          - containerPort: 389
+          - containerPort: 1389
             name: ldap
-          - containerPort: 636
-            name: ldaps
           volumeMounts:
-          - mountPath: /config
-            name: config
-          - mountPath: /data
-            name: data
+          - name: config
+            mountPath: /config
+          - name: data
+            mountPath: /data
+          # - name: tls
+          #   mountPath: /secrets/tls
       securityContext:
-        fsGroup: 1001
+        fsGroup: 1000
       volumes:
+        - name: config
+          configMap:
+            name: config
         - name: data
           persistentVolumeClaim:
             claimName: openldap
+        # - name: tls
+        #   secret:
+        #     secretName: ldap.example.com
 
 ---
 
@@ -61,6 +97,22 @@ spec:
     requests:
       storage: 1Gi
 
+# ---
+# Uncomment this to generate a certificate for TLS, if you have cert-manager installed.
+
+# apiVersion: cert-manager.io/v1
+# kind: Certificate
+# metadata:
+#   name: ldap.example.com
+#   namespace: ldap
+# spec:
+#   secretName: ldap.example.com
+#   dnsNames:
+#     - ldap.example.com
+#   issuerRef:
+#     kind: ClusterIssuer
+#     name: letsencrypt
+
 ---
 
 apiVersion: v1
@@ -74,8 +126,5 @@ spec:
     - name: ldap
       port: 389
       targetPort: 1389
-    - name: ldaps
-      port: 636
-      targetPort: 1636
   selector:
     app: openldap
