@@ -29,6 +29,11 @@ while ! ldapsearch -H ldapi:/// -Y EXTERNAL -b "cn=config" '(objectClass=olcData
     test ${COUNT} -lt 120
 done
 
+# As a convenience, create any referenced data directories.
+grep -i olcDbDirectory "${CONFIG}"/*.ldif | awk '{print $2}' | while read -r DIR ; do
+    mkdir -p "${DIR}"
+done
+
 # Load all the ldif files except slapd.ldif.
 for LDIF in "${CONFIG}"/*.ldif ; do
     ldapadd -H ldapi:/// -Y EXTERNAL -f "${LDIF}"
